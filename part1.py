@@ -168,7 +168,7 @@ def danger() :
             
 def takeoff_cmd() :
     global crashed
-    global airbornee
+    global airborne
     global docked
     global battery
     global Danger
@@ -177,7 +177,7 @@ def takeoff_cmd() :
     global obstacle_distance
 
     if(crashed == 0 and airbornee == 0 and docked == 0 and battery > 0) :
-        airbornee = 1
+        airborne = 1
         if((posX, posY) in Danger) :
             obstacle_distance = 0
         else :
@@ -185,7 +185,7 @@ def takeoff_cmd() :
 
 def return_home() :
     global crashed
-    global airbornee
+    global airborne
     global docked
     global battery
     global Danger
@@ -196,7 +196,7 @@ def return_home() :
     global obstacle_distance
     global visZones
 
-    if(crashed == 0 and airbornee == 1 and docked == 0 and battery > 0) :
+    if(crashed == 0 and airborne == 1 and docked == 0 and battery > 0) :
         if(posX < baseX) :
             nextX = posX + 1
 
@@ -227,7 +227,7 @@ def return_home() :
 
 def charge_step() :
     global crashed
-    global airbornee
+    global airborne
     global docked
     global battery
     global Danger
@@ -241,7 +241,7 @@ def charge_step() :
 
 def emergency_stop() :
     global crashed
-    global airbornee
+    global airborne
     global docked
     global obstacle_distance
 
