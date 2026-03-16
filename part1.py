@@ -13,7 +13,7 @@ posY:int = 0
 battery:int = 100
 crashed:int = 0
 docked:int = 0
-airborn:int = 1
+airborne:int = 1
 visZones:list
 obstacle_distance:int = 2
 
@@ -46,8 +46,8 @@ def init():
     while(posY<0 or posY>maxY):
         posY= int(input("rentrer y du drone :"))
 
-    global airborn
-    airborn=1
+    global airborne
+    airborne=1
 
     global docked 
     docked=0 
@@ -79,13 +79,13 @@ def movestep():
     global posX
     global posY
     global battery
-    global airborn
+    global airborne
     global crashed
     global docked
-    global obstacledistance
+    global obstacle_distance
     global visZones
 
-    if(not(crashed==0 and airborn==1 and docked==0 and battery>0)):
+    if(not(crashed==0 and airborne==1 and docked==0 and battery>0)):
         return Exception
     
     possible=mov_poss(posX,posY)
@@ -99,13 +99,13 @@ def movestep():
     posX=possible[choix][0]
     posY=possible[choix][1]
     battery-=1
-    
+
     if(zoneOf(posX,posY) not in visZones):
         visZones.append(zoneOf(posX,posY))
     if((posX,posY) in Danger):
-        obstacledistance=0
+        emergency_stop()
     else:
-        obstacledistance=2
+        obstacle_distance=2
 
 
 def mov_poss(x,y):
@@ -157,16 +157,18 @@ def danger() :
     j = r.randint(0, maxY - 1)
     taux_danger = float(input("Choisissez un taux de danger (entre 0 et 1) :"))
     b = int(maxX*maxY*taux_danger)
+    n = 0
 
-    for n in range(0, b) :
-        if((i, j) not in Danger) :
+    while(n < b) :
+        if((i, j) not in Danger and (i, j) != (posX, posY) and (i,j) != (baseX, baseY)) :
             Danger.append((i, j))
+            n += 1
         i = r.randint(0, maxX - 1)
         j = r.randint(0, maxY -1)
             
 def takeoff_cmd() :
     global crashed
-    global airborne
+    global airbornee
     global docked
     global battery
     global Danger
@@ -174,8 +176,8 @@ def takeoff_cmd() :
     global posY
     global obstacle_distance
 
-    if(crashed == 0 and airborne == 0 and docked == 0 and battery > 0) :
-        airborne = 1
+    if(crashed == 0 and airbornee == 0 and docked == 0 and battery > 0) :
+        airbornee = 1
         if((posX, posY) in Danger) :
             obstacle_distance = 0
         else :
@@ -183,7 +185,7 @@ def takeoff_cmd() :
 
 def return_home() :
     global crashed
-    global airborne
+    global airbornee
     global docked
     global battery
     global Danger
@@ -194,7 +196,7 @@ def return_home() :
     global obstacle_distance
     global visZones
 
-    if(crashed == 0 and airborne == 1 and docked == 0 and battery > 0) :
+    if(crashed == 0 and airbornee == 1 and docked == 0 and battery > 0) :
         if(posX < baseX) :
             nextX = posX + 1
 
@@ -225,7 +227,7 @@ def return_home() :
 
 def charge_step() :
     global crashed
-    global airborne
+    global airbornee
     global docked
     global battery
     global Danger
@@ -239,12 +241,12 @@ def charge_step() :
 
 def emergency_stop() :
     global crashed
-    global airborne
+    global airbornee
     global docked
     global obstacle_distance
 
     crashed = 1
-    airborne = 0
+    airbornee = 0
     docked = 0
     obstacle_distance = 0
 
@@ -252,29 +254,37 @@ def avoid_maneuver():
     global posX
     global posY
     global battery
-    global airborn
+    global airborne
     global crashed
     global docked
     global obstacle_distance
     global visZones
-    if(not(crashed==0 and airborn==1 and docked==0 and battery>1)):
+
+    if(not(crashed==0 and airborne==1 and docked==0 and battery>1)):
         return Exception
+    
     possible = mov_poss(posX,posY)
+
     for i in range(len(possible)-1,-1,-1):
         if(possible[i] in Danger):
             possible.pop(i)
+
     if(len(possible)):
         print(possible)
         choix=int(input("choisissez l'action à effectuer en tapant son indice\n"))
+
         while(choix<0 or choix>len(possible)-1):
             print(possible)
             choix=int(input("choisissez l'action à effectuer en tapant son indice\n"))
 
         posX=possible[choix][0]
         posY=possible[choix][1]
+
         if(zoneOf(posX,posY) not in visZones):
             visZones.append(zoneOf(posX,posY))
         obstacle_distance=2
+        battery -=2
+
     else:
         battery-=1
         movestep()
@@ -284,11 +294,15 @@ def avoid_maneuver():
 init()
 danger()
 while(True) :
+    if(crashed) :
+        print("Malaisia airline")
+        break
     afficher()
-    avoid_maneuver()
+    movestep()
     print(posX)
     print(posY)
-    afficher()
+
+
 
 
 
