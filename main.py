@@ -103,6 +103,9 @@ def movestep():
         emergency_stop()
     else:
         obstacle_distance=2
+    if((posX,posY)==(baseX,baseY)):
+        docked=1
+        airborne=0
 
 def mov_poss(x,y):
     poss=[]
@@ -292,9 +295,9 @@ init()
 danger()
 afficher()
 while(not crashed):
-    choix=int(input("movstep:1 avoidmaneuveur:2 returnhome:3 \n"))
-    while(choix!=1 and choix!=2 and choix!=3):
-        choix=int(input("movstep:1 avoidmaneuveur:2 returnhome:3 \n"))
+    choix=int(input("movstep:1 avoidmaneuveur:2 returnhome:3 returnhome:4 chargestep:5 takeoff_cmd:6\n"))
+    while(choix!=1 and choix!=2 and choix!=3 and choix!=4 and choix!=5 and choix!=6):
+        choix=int(input("movstep:1 avoidmaneuveur:2 returnhome:3 movstep:4 avoidmaneuveur:5 returnhome:6\n"))
     match choix:
         case 1:
             movestep()
@@ -302,6 +305,12 @@ while(not crashed):
             avoid_maneuver()
         case 3:
             return_home()
+        case 4:
+            charge_step()
+        case 5:
+            emergency_stop()
+        case 6:
+            takeoff_cmd()
     afficher()
 
 
