@@ -193,10 +193,12 @@ def danger() :
     j = r.randint(0, maxY - 1)
     taux_danger = float(input("Choisissez un taux de danger (entre 0 et 1) :"))
     b = int(maxX*maxY*taux_danger)
+    n = 0
 
-    for n in range(0, b) :
-        if((i, j) not in Danger) :
+    while(n < b) :
+        if((i, j) not in Danger and (i, j) != (posX, posY) and (i,j) != (baseX, baseY)) :
             Danger.append((i, j))
+            n += 1
         i = r.randint(0, maxX - 1)
         j = r.randint(0, maxY -1)
             
@@ -288,30 +290,38 @@ def emergency_stop() :
 
 
 
-
+def auto(fich) :
+    return 1
 
 #main
 init()
 danger()
 afficher()
-while(not crashed):
-    choix=int(input("movstep:1 avoidmaneuveur:2 returnhome:3 returnhome:4 chargestep:5 takeoff_cmd:6\n"))
-    while(choix!=1 and choix!=2 and choix!=3 and choix!=4 and choix!=5 and choix!=6):
-        choix=int(input("movstep:1 avoidmaneuveur:2 returnhome:3 movstep:4 avoidmaneuveur:5 returnhome:6\n"))
-    match choix:
-        case 1:
-            movestep()
-        case 2:
-            avoid_maneuver()
-        case 3:
-            return_home()
-        case 4:
-            charge_step()
-        case 5:
-            emergency_stop()
-        case 6:
-            takeoff_cmd()
-    afficher()
+mode=int(input("manuel:1 auto:2 exhaustif:3"))
+while(mode!=1 and mode!=2 and mode!=3):
+    mode=int(input("manuel:1 auto:2 exhaustif:3"))
+if(mode==1):
+    while(not crashed):
+        choix=int(input("movstep:1 avoidmaneuveur:2 returnhome:3 charge_step:4 emergency_stop:5 takeoff_cmd:6\n"))
+        while(choix!=1 and choix!=2 and choix!=3 and choix!=4 and choix!=5 and choix!=6):
+            choix=int(input("movstep:1 avoidmaneuveur:2 returnhome:3 charge_step:4 emergency_stop:5 takeoff_cmd:6\n"))
+        match choix:
+            case 1:
+                movestep()
+            case 2:
+                avoid_maneuver()
+            case 3:
+                return_home()
+            case 4:
+                charge_step()
+            case 5:
+                emergency_stop()
+            case 6:
+                takeoff_cmd()
+        afficher()
+elif(mode==2):
+    fichier=input("nom du fichier commande")
+
 
 
 
