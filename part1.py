@@ -176,7 +176,7 @@ def takeoff_cmd() :
     global posY
     global obstacle_distance
 
-    if(crashed == 0 and airbornee == 0 and docked == 0 and battery > 0) :
+    if(crashed == 0 and airborne == 0 and docked == 0 and battery > 0) :
         airborne = 1
         if((posX, posY) in Danger) :
             obstacle_distance = 0
