@@ -7,46 +7,60 @@ baseY:int
 Danger ={}
 Zonecount=4
 grille:list
-PosX:int
-PosY:int
+posX:int
+posY:int
 battery:int
 crashed:int
 docked:int
 airborn:int
 visZonr:list
-obstacledistance:int
+obstacle_distance:int
 
 def init():
     global maxX
-    maxX= int(input("rentrer la taille max x"))
+    maxX= int(input("rentrer la taille max x :"))
+
     global maxY
-    maxY= int(input("rentrer la taille max y"))
+    maxY= int(input("rentrer la taille max y :"))
+
     global baseX 
-    baseX= int(input("rentrer x de la base"))
+    baseX= int(input("rentrer x de la base :"))
+
     while(baseX<0 or baseX>maxX):
-        baseX= int(input("rentrer x de la base"))
+        baseX= int(input("rentrer x de la base :"))
+
     global baseY
-    baseY= int(input("rentrer y de la base"))
+    baseY= int(input("rentrer y de la base :"))
+
     while(baseY<0 or baseY>maxY):
-        baseY= int(input("rentrer y de la base"))
-    global PosX 
-    PosX= int(input("rentrer x du drone"))
-    while(PosX<0 or PosX>maxX):
-        PosX= int(input("rentrer x du drone"))
-    global PosY
-    PosY= int(input("rentrer y du drone"))
-    while(PosY<0 or PosY>maxY):
-        PosY= int(input("rentrer y du drone"))
+        baseY= int(input("rentrer y de la base :"))
+
+    global posX 
+    posX= int(input("rentrer x du drone :"))
+    while(posX<0 or posX>maxX):
+        posX= int(input("rentrer x du drone :"))
+
+    global posY
+    posY= int(input("rentrer y du drone :"))
+    while(posY<0 or posY>maxY):
+        posY= int(input("rentrer y du drone :"))
+
     global airborn
     airborn=1
+
     global docked 
     docked=0 
+
     global crashed
     crashed=0
+
+    global obstacle_distance
+    obstacle_distance = 2
+
     global visZones
     global battery
     battery=100
-    visZones={zoneOf(PosX,PosY)}
+    visZones={zoneOf(posX,posY)}
 
 
 def  zoneOf(x:int,y:int):
@@ -62,32 +76,32 @@ def  zoneOf(x:int,y:int):
         return 4
 
 def movestep():
-    global PosX
-    global PosY
+    global posX
+    global posY
     global battery
     global airborn
     global crashed
     global docked
-    global obstacledistance
+    global obstacle_distance
     global visZones
     if(not(crashed==0 and airborn==1 and docked==0 and battery>0)):
         return Exception
-    possible=mov_poss(PosX,PosY)
+    possible=mov_poss(posX,posY)
     print(possible)
     choix=int(input("choisissez l'action à effectuer en tapant son indice\n"))
     while(choix<0 or choix>len(possible)-1):
         print(possible)
         choix=int(input("choisissez l'action à effectuer en tapant son indice\n"))
 
-    PosX=possible[choix][0]
-    PosY=possible[choix][1]
+    posX=possible[choix][0]
+    posY=possible[choix][1]
     battery-=1
-    if(zoneOf(PosX,PosY) not in visZones):
-        visZones.append(zoneOf(PosX,PosY))
-    if((PosX,PosY) in Danger):
-        obstacledistance=0
+    if(zoneOf(posX,posY) not in visZones):
+        visZones.append(zoneOf(posX,posY))
+    if((posX,posY) in Danger):
+        obstacle_distance=0
     else:
-        obstacledistance=2
+        obstacle_distance=2
 
 def mov_poss(x,y):
     poss=[]
@@ -102,31 +116,31 @@ def mov_poss(x,y):
     return poss
 
 def avoid_maneuver():
-    global PosX
-    global PosY
+    global posX
+    global posY
     global battery
     global airborn
     global crashed
     global docked
-    global obstacledistance
+    global obstacle_distance
     global visZones
     if(not(crashed==0 and airborn==1 and docked==0 and battery>1)):
         return Exception
-    possible,t=mov_poss(PosX,PosY)
+    possible=mov_poss(posX,posY)
     for i in range(len(possible)-1,-1,-1):
         if(possible[i] in Danger):
             possible.pop(i)
     if(len(possible)):
         print(possible)
         choix=int(input("choisissez l'action à effectuer en tapant son indice\n"))
-        while(choix<0 or choix>t-1):
+        while(choix<0 or choix>len(possible)-1):
             print(possible)
             choix=int(input("choisissez l'action à effectuer en tapant son indice\n"))
 
-        PosX=possible[choix][0]
-        PosY=possible[choix][1]
-        if(zoneOf(PosX,PosY) not in visZones):
-            visZones.append(zoneOf(PosX,PosY))
+        posX=possible[choix][0]
+        posY=possible[choix][1]
+        if(zoneOf(posX,posY) not in visZones):
+            visZones.append(zoneOf(posX,posY))
         obstacle_distance=2
     else:
         battery-=1
@@ -137,24 +151,45 @@ def avoid_maneuver():
 def afficher() :
     global maxX
     global maxY
-    cases = "|__|"*maxX
-    for i in range(0, maxY) :
-            print(cases)
+    global posX
+    global posY
+    global baseX
+    global baseY
+    global Danger
 
+    ligne = " - "
 
-def danger(grille) :
+    case_drone = " d "
+    case_base = " b "
+    case_obstacle = " o "
+
+    for i in range (0, maxX) :
+        for j in range(0, maxY) :
+            if(i == posX and j == posY) :
+                print(case_drone, end="")
+            elif(i == baseX and j == baseY) :
+                 print(case_base, end="")
+            elif((i, j) in Danger) :
+                print(case_obstacle, end="")
+            else :
+                print(ligne, end="")
+        print("\n")
+
+def danger() :
     global maxX
     global maxY
     global Danger
-    i = r.random(0, maxX)
-    j = r.random(0, maxY)
-    taux_danger = int(input("Choisissez un taux de danger (entre 0 et 1) :"))
 
-    for n in range(0, len(grille)*taux_danger) :
+    i = r.randint(0, maxX)
+    j = r.randint(0, maxY)
+    taux_danger = float(input("Choisissez un taux de danger (entre 0 et 1) :"))
+    b = int(maxX*maxY*taux_danger)
+
+    for n in range(0, b) :
         if((i, j) not in Danger) :
-            Danger[n] = (i, j)
-        i = r.random(0, maxX)
-        j = r.random(0, maxY)
+            append(Danger, (i, j))
+        i = r.randint(0, maxX)
+        j = r.randint(0, maxY)
             
 def takeoff_cmd() :
     global crashed
@@ -248,6 +283,6 @@ def emergency_stop() :
 init()
 #movestep()
 avoid_maneuver()
-print(PosX)
-print(PosY)
+print(posX)
+print(posY)
 afficher()
