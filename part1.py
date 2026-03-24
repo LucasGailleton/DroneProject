@@ -102,6 +102,10 @@ def movestep():
 
     if(zoneOf(posX,posY) not in visZones):
         visZones.append(zoneOf(posX,posY))
+    if(posX == baseX and posY == baseY) :
+        docked = 1
+        airborne = 0
+        charge_step()
     if((posX,posY) in Danger):
         emergency_stop()
     else:
@@ -290,12 +294,11 @@ def avoid_maneuver():
         movestep()
 
 
-
 init()
 danger()
 while(True) :
     if(crashed) :
-        print("Malaisia airline")
+        print("Malaysia airline")
         break
     afficher()
     movestep()
