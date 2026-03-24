@@ -297,14 +297,14 @@ def auto(fich) :
 init()
 danger()
 afficher()
-mode=int(input("manuel:1 auto:2 exhaustif:3"))
+mode=int(input("(1):manuel (2):auto (3):exhaustif"))
 while(mode!=1 and mode!=2 and mode!=3):
-    mode=int(input("manuel:1 auto:2 exhaustif:3"))
+    mode=int(input("(1):manuel (2):auto (3):exhaustif"))
 if(mode==1):
     while(not crashed):
-        choix=int(input("movstep:1 avoidmaneuveur:2 returnhome:3 charge_step:4 emergency_stop:5 takeoff_cmd:6\n"))
+        choix=int(input("(1):movstep (2):avoidmaneuveur (3):returnhome (4):charge_step (5):emergency_stop (6):takeoff_cmd\n"))
         while(choix!=1 and choix!=2 and choix!=3 and choix!=4 and choix!=5 and choix!=6):
-            choix=int(input("movstep:1 avoidmaneuveur:2 returnhome:3 charge_step:4 emergency_stop:5 takeoff_cmd:6\n"))
+            choix=int(input("(1):movstep (2):avoidmaneuveur (3):returnhome (4):charge_step (5):emergency_stop (6):takeoff_cmd\n"))
         match choix:
             case 1:
                 movestep()
