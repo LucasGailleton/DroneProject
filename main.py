@@ -1,5 +1,37 @@
 import random as r
 
+
+class State:
+    def __init__(self, maxX, maxY,baseX,baseY,posX,posY,battery,crashed,docked,airborne,visZones,obstacle_distance):
+        # Dimensions de la carte
+        self.maxX = maxX
+        self.maxY = maxY
+        
+        # Position de la base et du drone
+        self.baseX = baseX
+        self.baseY = baseY
+        self.posX = posX
+        self.posY = posY
+        
+        # États du drone (Booléens ou Int)
+        self.battery = battery
+        self.crashed = crashed
+        self.docked = docked
+        self.airborne = airborne
+        
+        # Données d'environnement
+        self.vis_Zones = []    # Zones déjà visitées
+        self.obstacle_distance = 2
+
+class Transition:
+    def __init__(self, src: State, dest: State, label: str):
+        self.src=src
+        self.dest=dest
+        self.etiq=label
+    
+
+
+    
 maxX:int
 maxY:int
 baseX:int
@@ -100,7 +132,6 @@ def movestep():
         visZones.append(zoneOf(posX,posY))
     if((posX,posY) in Danger):
         obstacle_distance=0
-        emergency_stop()
     else:
         obstacle_distance=2
     if((posX,posY)==(baseX,baseY)):
@@ -192,6 +223,8 @@ def danger() :
     i = r.randint(0, maxX - 1)
     j = r.randint(0, maxY - 1)
     taux_danger = float(input("Choisissez un taux de danger (entre 0 et 1) :"))
+    while(taux_danger<0 or taux_danger>1):
+        taux_danger = float(input("Choisissez un taux de danger (entre 0 et 1) :"))
     b = int(maxX*maxY*taux_danger)
     n = 0
 
@@ -216,7 +249,6 @@ def takeoff_cmd() :
         airbornee = 1
         if((posX, posY) in Danger) :
             obstacle_distance = 0
-            emergency_stop()
         else :
              obstacle_distance = 2
 
@@ -259,7 +291,6 @@ def return_home() :
 
         if((nextX, nextY) in Danger):
            obstacle_distance = 0
-           emergency_stop()
         else :
             obstacle_distance = 2
 
@@ -289,20 +320,105 @@ def emergency_stop() :
     obstacle_distance = 0
 
 
-
 def auto(fich) :
-    return 1
+    f=open(fich,'r')
+    #init
+    global maxX
+    maxX= f.readline()[9]
 
+    global maxY
+    maxY= f.readline()[9]
+
+    print(maxX)
+    global baseX 
+    baseX= f.readline()[11]
+
+    if(baseX<0 or baseX>maxX):
+        print("initialisation incorrecte\n")
+        return
+
+    global baseY
+    baseY= f.readline()[11]
+
+    if(baseY<0 or baseY>maxY):
+        print("initialisation incorrecte\n")
+        return
+
+    global posX 
+    posX= f.readline()[12]
+    if(posX<0 or posX>maxX):
+        print("initialisation incorrecte\n")
+        return
+
+    global posY
+    posY= f.readline()[12]
+    if(posY<0 or posY>maxY):
+        print("initialisation incorrecte\n")
+        return
+
+    global airborne
+    airborne=1
+
+    global docked 
+    docked=0 
+
+    global crashed
+    crashed=0
+
+    global obstacle_distance
+    obstacle_distance = 2
+
+    global visZones
+    global battery
+    battery=100
+    visZones=[zoneOf(posX,posY)]
+    #parcours
+    while():
+        if(not(crashed==0 and airborne==1 and docked==0 and battery>0)):
+            return Exception
+        possible=mov_poss(posX,posY)
+        choix=f.readline()[0]
+        
+        if(choix<0 or choix>len(possible)-1):
+            print(possible)
+            print("mouvement impossible\n")
+
+        posX=possible[choix][0]
+        posY=possible[choix][1]
+        battery-=1
+        if(zoneOf(posX,posY) not in visZones):
+            visZones.append(zoneOf(posX,posY))
+        if((posX,posY) in Danger):
+            obstacle_distance=0
+            emergency_stop()
+        else:
+            obstacle_distance=2
+        if((posX,posY)==(baseX,baseY)):
+            docked=1
+            airborne=0
+
+
+
+
+def mess():
+    i=1
+    
+
+    return
 #main
-init()
-danger()
-afficher()
+#init()
+#danger()
+#afficher()
 mode=int(input("(1):manuel (2):auto (3):exhaustif"))
 while(mode!=1 and mode!=2 and mode!=3):
     mode=int(input("(1):manuel (2):auto (3):exhaustif"))
 if(mode==1):
+    init()
+    danger()
+    afficher()
     while(not crashed):
-        choix=int(input("(1):movstep (2):avoidmaneuveur (3):returnhome (4):charge_step (5):emergency_stop (6):takeoff_cmd\n"))
+        message=mess()
+        choix=int(input("(1):Movstep (2):AvoidManeuveur (3):ReturnHome (4):Charge_Step (5):Emergency_Stop (6):Takeoff_cmd\n"))
         while(choix!=1 and choix!=2 and choix!=3 and choix!=4 and choix!=5 and choix!=6):
             choix=int(input("(1):movstep (2):avoidmaneuveur (3):returnhome (4):charge_step (5):emergency_stop (6):takeoff_cmd\n"))
         match choix:
@@ -320,7 +436,8 @@ if(mode==1):
                 takeoff_cmd()
         afficher()
 elif(mode==2):
-    fichier=input("nom du fichier commande")
+    fichier=input("nom du fichier commande:")
+    auto(fichier)
 
 
 
