@@ -1,52 +1,106 @@
 import random as r
 
+
+class State:
+    def __init__(self, maxX, maxY,baseX,baseY,posX,posY,battery,crashed,docked,airborne,visZones,obstacle_distance, reward):
+        # Dimensions de la carte
+        self.maxX = maxX
+        self.maxY = maxY
+        
+        # Position de la base et du drone
+        self.baseX = baseX
+        self.baseY = baseY
+        self.posX = posX
+        self.posY = posY
+        
+        # États du drone (Booléens ou Int)
+        self.battery = battery
+        self.crashed = crashed
+        self.docked = docked
+        self.airborne = airborne
+        
+        # Données d'environnement
+        self.vis_Zones = visZones    # Zones déjà visitées
+        self.obstacle_distance = obstacle_distance
+        self.reward = reward
+    
+    def recompense():
+        if(crashed or battery == 0 ) :
+            reward -= 500
+        elif((posX, posY) in Danger) :
+            reward -= 100
+        elif(0 < battery < 15) :
+            reward -= 50
+        else :
+            reward += 100
+
+class Transition:
+    def __init__(self, src: State, dest: State, label: str):
+        self.src=src
+        self.dest=dest
+        self.etiq=label
+    
 maxX:int
 maxY:int
 baseX:int
 baseY:int
-Danger ={}
+Danger =[]
 Zonecount=4
 grille:list
-PosX:int
-PosY:int
+posX:int
+posY:int
 battery:int
 crashed:int
 docked:int
-airborn:int
-visZonr:list
-obstacledistance:int
+airborne:int
+visZones:list
+obstacle_distance:int
 
 def init():
     global maxX
-    maxX= int(input("rentrer la taille max x"))
+    maxX= int(input("rentrer la taille max x :"))
+
     global maxY
-    maxY= int(input("rentrer la taille max y"))
+    maxY= int(input("rentrer la taille max y :"))
+
     global baseX 
-    baseX= int(input("rentrer x de la base"))
+    baseX= int(input("rentrer x de la base :"))
+
     while(baseX<0 or baseX>maxX):
-        baseX= int(input("rentrer x de la base"))
+        baseX= int(input("rentrer x de la base :"))
+
     global baseY
-    baseY= int(input("rentrer y de la base"))
+    baseY= int(input("rentrer y de la base :"))
+
     while(baseY<0 or baseY>maxY):
-        baseY= int(input("rentrer y de la base"))
-    global PosX 
-    PosX= int(input("rentrer x du drone"))
-    while(PosX<0 or PosX>maxX):
-        PosX= int(input("rentrer x du drone"))
-    global PosY
-    PosY= int(input("rentrer y du drone"))
-    while(PosY<0 or PosY>maxY):
-        PosY= int(input("rentrer y du drone"))
-    global airborn
-    airborn=1
+        baseY= int(input("rentrer y de la base :"))
+
+    global posX 
+    posX= int(input("rentrer x du drone :"))
+    while(posX<0 or posX>maxX):
+        posX= int(input("rentrer x du drone :"))
+
+    global posY
+    posY= int(input("rentrer y du drone :"))
+    while(posY<0 or posY>maxY):
+        posY= int(input("rentrer y du drone :"))
+
+    global airborne
+    airborne=1
+
     global docked 
     docked=0 
+
     global crashed
     crashed=0
+
+    global obstacle_distance
+    obstacle_distance = 2
+
     global visZones
     global battery
     battery=100
-    visZones={zoneOf(PosX,PosY)}
+    visZones=[zoneOf(posX,posY)]
 
 
 def  zoneOf(x:int,y:int):
@@ -62,32 +116,35 @@ def  zoneOf(x:int,y:int):
         return 4
 
 def movestep():
-    global PosX
-    global PosY
+    global posX
+    global posY
     global battery
-    global airborn
+    global airborne
     global crashed
     global docked
-    global obstacledistance
+    global obstacle_distance
     global visZones
-    if(not(crashed==0 and airborn==1 and docked==0 and battery>0)):
+    if(not(crashed==0 and airborne==1 and docked==0 and battery>0)):
         return Exception
-    possible=mov_poss(PosX,PosY)
+    possible=mov_poss(posX,posY)
     print(possible)
     choix=int(input("choisissez l'action à effectuer en tapant son indice\n"))
     while(choix<0 or choix>len(possible)-1):
         print(possible)
         choix=int(input("choisissez l'action à effectuer en tapant son indice\n"))
 
-    PosX=possible[choix][0]
-    PosY=possible[choix][1]
+    posX=possible[choix][0]
+    posY=possible[choix][1]
     battery-=1
-    if(zoneOf(PosX,PosY) not in visZones):
-        visZones.append(zoneOf(PosX,PosY))
-    if((PosX,PosY) in Danger):
-        obstacledistance=0
+    if(zoneOf(posX,posY) not in visZones):
+        visZones.append(zoneOf(posX,posY))
+    if((posX,posY) in Danger):
+        obstacle_distance=0
     else:
-        obstacledistance=2
+        obstacle_distance=2
+    if((posX,posY)==(baseX,baseY)):
+        docked=1
+        airborne=0
 
 def mov_poss(x,y):
     poss=[]
@@ -102,32 +159,33 @@ def mov_poss(x,y):
     return poss
 
 def avoid_maneuver():
-    global PosX
-    global PosY
+    global posX
+    global posY
     global battery
-    global airborn
+    global airborne
     global crashed
     global docked
-    global obstacledistance
+    global obstacle_distance
     global visZones
-    if(not(crashed==0 and airborn==1 and docked==0 and battery>1)):
+    if(not(crashed==0 and airborne==1 and docked==0 and battery>1)):
         return Exception
-    possible,t=mov_poss(PosX,PosY)
+    possible=mov_poss(posX,posY)
     for i in range(len(possible)-1,-1,-1):
         if(possible[i] in Danger):
             possible.pop(i)
     if(len(possible)):
         print(possible)
         choix=int(input("choisissez l'action à effectuer en tapant son indice\n"))
-        while(choix<0 or choix>t-1):
+        while(choix<0 or choix>len(possible)-1):
             print(possible)
             choix=int(input("choisissez l'action à effectuer en tapant son indice\n"))
 
-        PosX=possible[choix][0]
-        PosY=possible[choix][1]
-        if(zoneOf(PosX,PosY) not in visZones):
-            visZones.append(zoneOf(PosX,PosY))
+        posX=possible[choix][0]
+        posY=possible[choix][1]
+        if(zoneOf(posX,posY) not in visZones):
+            visZones.append(zoneOf(posX,posY))
         obstacle_distance=2
+        battery-=2
     else:
         battery-=1
         movestep()
@@ -137,28 +195,57 @@ def avoid_maneuver():
 def afficher() :
     global maxX
     global maxY
-    cases = "|__|"*maxX
-    for i in range(0, maxY) :
-            print(cases)
+    global posX
+    global posY
+    global baseX
+    global baseY
+    global Danger
 
+    ligne = " - "
 
-def danger(grille) :
+    case_drone = " d "
+    case_crash =" X "
+    case_base = " b "
+    case_obstacle = " o "
+
+    for i in range (0, maxX) :
+        for j in range(0, maxY) :
+            if(i == posX and j == posY) :
+                if(not crashed):
+                    print(case_drone, end="")
+                else:
+                    print(case_crash, end="")
+            elif(i == baseX and j == baseY) :
+                 print(case_base, end="")
+            elif((i, j) in Danger) :
+                print(case_obstacle, end="")
+            else :
+                print(ligne, end="")
+        print("\n")
+
+def danger() :
     global maxX
     global maxY
     global Danger
-    i = r.random(0, maxX)
-    j = r.random(0, maxY)
-    taux_danger = int(input("Choisissez un taux de danger (entre 0 et 1) :"))
 
-    for n in range(0, len(grille)*taux_danger) :
-        if((i, j) not in Danger) :
-            Danger[n] = (i, j)
-        i = r.random(0, maxX)
-        j = r.random(0, maxY)
+    i = r.randint(0, maxX - 1)
+    j = r.randint(0, maxY - 1)
+    taux_danger = float(input("Choisissez un taux de danger (entre 0 et 1) :"))
+    while(taux_danger<0 or taux_danger>1):
+        taux_danger = float(input("Choisissez un taux de danger (entre 0 et 1) :"))
+    b = int(maxX*maxY*taux_danger)
+    n = 0
+
+    while(n < b) :
+        if((i, j) not in Danger and (i, j) != (posX, posY) and (i,j) != (baseX, baseY)) :
+            Danger.append((i, j))
+            n += 1
+        i = r.randint(0, maxX - 1)
+        j = r.randint(0, maxY -1)
             
 def takeoff_cmd() :
     global crashed
-    global airborne
+    global airbornee
     global docked
     global battery
     global Danger
@@ -166,8 +253,8 @@ def takeoff_cmd() :
     global posY
     global obstacle_distance
 
-    if(crashed == 0 and airborne == 0 and docked == 0 and battery > 0) :
-        airborne = 1
+    if(crashed == 0 and airbornee == 0 and docked == 0 and battery > 0) :
+        airbornee = 1
         if((posX, posY) in Danger) :
             obstacle_distance = 0
         else :
@@ -175,7 +262,7 @@ def takeoff_cmd() :
 
 def return_home() :
     global crashed
-    global airborne
+    global airbornee
     global docked
     global battery
     global Danger
@@ -186,7 +273,7 @@ def return_home() :
     global obstacle_distance
     global visZones
 
-    if(crashed == 0 and airborne == 1 and docked == 0 and battery > 0) :
+    if(crashed == 0 and airbornee == 1 and docked == 0 and battery > 0) :
         if(posX < baseX) :
             nextX = posX + 1
 
@@ -217,7 +304,7 @@ def return_home() :
 
 def charge_step() :
     global crashed
-    global airborne
+    global airbornee
     global docked
     global battery
     global Danger
@@ -231,23 +318,133 @@ def charge_step() :
 
 def emergency_stop() :
     global crashed
-    global airborne
+    global airbornee
     global docked
     global obstacle_distance
 
     crashed = 1
-    airborne = 0
+    airbornee = 0
     docked = 0
     obstacle_distance = 0
 
 
+def auto(fich) :
+    f=open(fich,'r')
+    #init
+    global maxX
+    maxX= f.readline()[9]
 
+    global maxY
+    maxY= f.readline()[9]
 
+    print(maxX)
+    global baseX 
+    baseX= f.readline()[11]
+
+    if(baseX<0 or baseX>maxX):
+        print("initialisation incorrecte\n")
+        return
+
+    global baseY
+    baseY= f.readline()[11]
+
+    if(baseY<0 or baseY>maxY):
+        print("initialisation incorrecte\n")
+        return
+
+    global posX 
+    posX= f.readline()[12]
+    if(posX<0 or posX>maxX):
+        print("initialisation incorrecte\n")
+        return
+
+    global posY
+    posY= f.readline()[12]
+    if(posY<0 or posY>maxY):
+        print("initialisation incorrecte\n")
+        return
+
+    global airborne
+    airborne=1
+
+    global docked 
+    docked=0 
+
+    global crashed
+    crashed=0
+
+    global obstacle_distance
+    obstacle_distance = 2
+
+    global visZones
+    global battery
+    battery=100
+    visZones=[zoneOf(posX,posY)]
+    #parcours
+    while():
+        if(not(crashed==0 and airborne==1 and docked==0 and battery>0)):
+            return Exception
+        possible=mov_poss(posX,posY)
+        choix=f.readline()[0]
+        
+        if(choix<0 or choix>len(possible)-1):
+            print(possible)
+            print("mouvement impossible\n")
+
+        posX=possible[choix][0]
+        posY=possible[choix][1]
+        battery-=1
+        if(zoneOf(posX,posY) not in visZones):
+            visZones.append(zoneOf(posX,posY))
+        if((posX,posY) in Danger):
+            obstacle_distance=0
+            emergency_stop()
+        else:
+            obstacle_distance=2
+        if((posX,posY)==(baseX,baseY)):
+            docked=1
+            airborne=0
+
+    
 
 #main
-init()
-#movestep()
-avoid_maneuver()
-print(PosX)
-print(PosY)
-afficher()
+#init()
+#danger()
+#afficher()
+mode=int(input("(1):manuel (2):auto (3):exhaustif"))
+while(mode!=1 and mode!=2 and mode!=3):
+    mode=int(input("(1):manuel (2):auto (3):exhaustif"))
+if(mode==1):
+    init()
+    danger()
+    afficher()
+    while(not crashed):
+        choix=int(input("(1):Movstep (2):AvoidManeuveur (3):ReturnHome (4):Charge_Step (5):Emergency_Stop (6):Takeoff_cmd\n"))
+        while(choix!=1 and choix!=2 and choix!=3 and choix!=4 and choix!=5 and choix!=6):
+            choix=int(input("(1):movstep (2):avoidmaneuveur (3):returnhome (4):charge_step (5):emergency_stop (6):takeoff_cmd\n"))
+        match choix:
+            case 1:
+                movestep()
+            case 2:
+                avoid_maneuver()
+            case 3:
+                return_home()
+            case 4:
+                charge_step()
+            case 5:
+                emergency_stop()
+            case 6:
+                takeoff_cmd()
+        afficher()
+elif(mode==2):
+    fichier=input("nom du fichier commande:")
+    auto(fichier)
+
+
+
+
+"""Transition{
+State src;
+State cible;
+action;
+float proba;}"""
