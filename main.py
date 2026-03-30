@@ -95,7 +95,7 @@ def  zoneOf(x:int,y:int):
     elif(x>maxX/2 and y>maxY/2):
         return 4
 
-def movestep_old():
+"""def movestep_old():
     global s_courant
     if(not(s_courant.crashed==0 and s_courant.airborne==1 and s_courant.docked==0 and s_courant.battery>0)):
         return Exception
@@ -118,7 +118,7 @@ def movestep_old():
         obstacle_distance=2
     if((posX,posY)==(baseX,baseY)):
         docked=1
-        airborne=0
+        airborne=0"""
 
 def mov_poss(x,y):
     poss=[]
@@ -139,7 +139,7 @@ def movestep():
     state_possible:list
     state_possible=state_poss(s_courant,1)
     print("[",end="")
-    for i in range(len(state_possible)-1,-1,-1):
+    for i in range(0,len(state_possible),1):
         print(f"({state_possible[i].posX}, {state_possible[i].posY}),", end="")
     print("]")
     choix=int(input("choisissez l'action à effectuer en tapant son indice\n"))
@@ -173,7 +173,7 @@ def state_poss(s:State,bat_loss):
         else:
             obs=2
         if((posiX,posiY) not in s.visZones):
-            tab=s.visZones.append((posiX,posiY))
+            tab=s.visZones + [(posiX, posiY)]
         else:
             tab=s.visZones
         poss.append(State(posiX,posiY,s.battery-bat_loss,s.crashed,dock,air,tab,obs))
@@ -183,6 +183,9 @@ def state_poss(s:State,bat_loss):
         if(posiX==baseX and posiY==baseY):
             dock=1
             air=0
+        else:
+            dock=0
+            air=1
         if(s.crashed):
             air=0
         if((posiX,posiY) in Danger):
@@ -190,7 +193,7 @@ def state_poss(s:State,bat_loss):
         else:
             obs=2
         if((posiX,posiY) not in s.visZones):
-            tab=s.visZones.append((posiX,posiY))
+            tab=s.visZones + [(posiX, posiY)]
         else:
             tab=s.visZones
         poss.append(State(posiX,posiY,s.battery-bat_loss,s.crashed,dock,air,tab,obs))
@@ -200,6 +203,9 @@ def state_poss(s:State,bat_loss):
         if(posiX==baseX and posiY==baseY):
             dock=1
             air=0
+        else:
+            dock=0
+            air=1
         if(s.crashed):
             air=0
         if((posiX,posiY) in Danger):
@@ -207,7 +213,7 @@ def state_poss(s:State,bat_loss):
         else:
             obs=2
         if((posiX,posiY) not in s.visZones):
-            tab=s.visZones.append((posiX,posiY))
+            tab=s.visZones + [(posiX, posiY)]
         else:
             tab=s.visZones
         poss.append(State(posiX,posiY,s.battery-bat_loss,s.crashed,dock,air,tab,obs))
@@ -217,6 +223,9 @@ def state_poss(s:State,bat_loss):
         if(posiX==baseX and posiY==baseY):
             dock=1
             air=0
+        else:
+            dock=0
+            air=1
         if(s.crashed):
             air=0
         if((posiX,posiY) in Danger):
@@ -224,7 +233,7 @@ def state_poss(s:State,bat_loss):
         else:
             obs=2
         if((posiX,posiY) not in s.visZones):
-            tab=s.visZones.append((posiX,posiY))
+            tab=s.visZones + [(posiX, posiY)]
         else:
             tab=s.visZones
         poss.append(State(posiX,posiY,s.battery-bat_loss,s.crashed,dock,air,tab,obs))
@@ -480,9 +489,9 @@ def auto(fich) :
 
 
 
-def mess():
+def mess(step,avoid):
     i=1
-    
+
 
     return
 
@@ -498,7 +507,7 @@ if(mode==1):
     danger()
     afficher()
     while(not s_courant.crashed):
-        message=mess()
+        #message=mess()
         choix=int(input("(1):Movstep (2):AvoidManeuveur (3):ReturnHome (4):Charge_Step (5):Emergency_Stop (6):Takeoff_cmd\n"))
         while(choix!=1 and choix!=2 and choix!=3 and choix!=4 and choix!=5 and choix!=6):
             choix=int(input("(1):movstep (2):avoidmaneuveur (3):returnhome (4):charge_step (5):emergency_stop (6):takeoff_cmd\n"))
