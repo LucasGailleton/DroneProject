@@ -240,38 +240,34 @@ def state_poss(s:State,bat_loss):
     return poss
 
 def avoid_maneuver():
-    global posX
-    global posY
-    global battery
-    global airborne
-    global crashed
-    global docked
-    global obstacle_distance
-    global visZones
-    if(not(crashed==0 and airborne==1 and docked==0 and battery>1)):
+    global s_courant
+    if(not(s_courant.crashed==0 and s_courant.airborne==1 and s_courant.docked==0 and s_courant.battery>1)):
         return Exception
-    possible=mov_poss(posX,posY)
-    for i in range(len(possible)-1,-1,-1):
-        if(possible[i] in Danger):
-            possible.pop(i)
-    if(len(possible)):
-        print(possible)
+    state_possible:list
+    state_possible=state_avoid(s_courant)
+    print("[",end="")
+    for i in range(0,len(state_possible),1):
+        print(f"({state_possible[i].posX}, {state_possible[i].posY}),", end="")
+    print("]")
+    choix=int(input("choisissez l'action à effectuer en tapant son indice\n"))
+    while(choix<0 or choix>len(state_possible)-1):
+        print("[")
+        for i in state_possible:
+            print("("+state_possible[i].posX+","+state_possible[i].posY+")"+",")
+        print("]")
         choix=int(input("choisissez l'action à effectuer en tapant son indice\n"))
-        while(choix<0 or choix>len(possible)-1):
-            print(possible)
-            choix=int(input("choisissez l'action à effectuer en tapant son indice\n"))
+    s_courant=state_possible[choix]
 
-        posX=possible[choix][0]
-        posY=possible[choix][1]
-        if(zoneOf(posX,posY) not in visZones):
-            visZones.append(zoneOf(posX,posY))
-        obstacle_distance=2
-        battery-=2
+def state_avoid(s:State):
+    res=[]
+    state_possible=state_poss(s_courant,2)
+    for i in range(0,len(state_possible),1):
+        if(state_possible[i].obstacle_distance!=0):
+            res.append(state_possible[i])
+    if(len(res)>0):
+        return res
     else:
-        battery-=1
-        movestep()
-
-
+        return state_possible
 
 def afficher() :
     global maxX
@@ -433,34 +429,24 @@ def auto(fich) :
         print("initialisation incorrecte\n")
         return
 
-    global posX 
     posX= f.readline()[12]
     if(posX<0 or posX>maxX):
         print("initialisation incorrecte\n")
         return
 
-    global posY
     posY= f.readline()[12]
     if(posY<0 or posY>maxY):
         print("initialisation incorrecte\n")
         return
 
-    global airborne
     airborne=1
-
-    global docked 
     docked=0 
-
-    global crashed
     crashed=0
-
-    global obstacle_distance
     obstacle_distance = 2
-
-    global visZones
-    global battery
     battery=100
     visZones=[zoneOf(posX,posY)]
+    global s_courant
+    s_courant= State(posX,posY,battery,crashed,docked,airborne,visZones,obstacle_distance)
     #parcours
     while():
         if(not(crashed==0 and airborne==1 and docked==0 and battery>0)):
@@ -527,7 +513,14 @@ if(mode==1):
         afficher()
 elif(mode==2):
     fichier=input("nom du fichier commande:")
-    auto(fichier)
+    #auto(fichier)
+    f=open(fichier,'r')
+    print(f.readline()[0])
+
+    #Pour la lecture
+    contenu = f.read()
+    # \d+ cherche toutes les suites de chiffres dans le texte
+    valeurs = [int(n) for n in re.findall(r'\d+', contenu)]
 
 
 
