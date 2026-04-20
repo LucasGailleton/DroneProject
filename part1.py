@@ -2,14 +2,9 @@ import random as r
 
 
 class State:
-    def __init__(self, maxX, maxY,baseX,baseY,posX,posY,battery,crashed,docked,airborne,visZones,obstacle_distance):
-        # Dimensions de la carte
-        self.maxX = maxX
-        self.maxY = maxY
+    def __init__(self,posX:int,posY:int,battery:int,crashed:int,docked:int,airborne:int,visZones:list,obstacle_distance:int):
         
         # Position de la base et du drone
-        self.baseX = baseX
-        self.baseY = baseY
         self.posX = posX
         self.posY = posY
         
@@ -20,22 +15,44 @@ class State:
         self.airborne = airborne
         
         # Données d'environnement
-        self.vis_Zones = visZones    # Zones déjà visitées
+        self.visZones = visZones    # Zones déjà visitées
         self.obstacle_distance = obstacle_distance
-
-        self.transi : []
+        self.transi:[]
 
     def transitions(self) :
         return self.transi
     
     def remplir_transition(self) :
         if (self.crashed == 0 and self.airborne == 0 and self.docked == 0 and self.battery > 0) :
-            etat_suiv = State(maxX, maxY, baseX, baseY, posX, posY, battery, crashed, docked, 1, visZones, obstacle_distance)
+            etat_suiv = State(posX, posY, battery, crashed, docked, 1, visZones, obstacle_distance)
             self.transi.append(Transition(self, etat_suiv, "takeoff_cmd"))
+
         if (self.crashed == 0 and self.airborne == 1 and self.docked == 0 and self.battery > 0) :
-            etat_suiv = State(maxX, maxY, baseX, baseY, posX, posY, battery - 1, crashed, docked, airborne, visZones, obstacle_distance)
-            self.transi.append(Transition(self, etat_suiv, "move_step"))
-    
+            states_possibles = state_poss(self, 1)
+            
+            for s in states_possibles :
+                self.transi.append(Transition(self, s, "move_step" + (s.posX, s.posY)))
+            
+            (homeX, homeY) = return_home()
+
+            self.transi.append(Transition(self, State(homeX, homeY, self.battery, self.crashed, self.docked, self.airborne, self.visZones, self.obstacle_distance)), "return_home")
+
+        if (self.crashed == 0 and self.airborne == 0 and self.docked == 0 and self.battery > 1) :
+            states_possibles = state_poss(self, 1)
+            
+            for s in states_possibles :
+                self.transi.append(Transition(self, s, "move_step" + (s.posX, s.posY)))
+
+        if(crashed == 0 and docked == 1) :
+            if(battery <= 95) :
+                bat = battery + 5
+            else :
+                bat = 100
+            etat_suiv = State(self.posX, self.posY, bat, self.crashed, self.docked, self.airborne, self.visZones, self.obstacle_distance)
+            self.transi.append(Transition(self, etat_suiv, "charge_step"))
+
+        etat_suiv = State(self.posX, self.posY, self.battery, 1, 0, 0, self.visZones, 0)
+        self.transi.append(Transition(self, etat_suiv, "emergency_stop"))
 
 class Transition:
     def __init__(self, src: State, dest: State, label: str):
@@ -54,14 +71,8 @@ baseY:int
 Danger =[]
 Zonecount=4
 grille:list
-posX:int
-posY:int
-battery:int
-crashed:int
-docked:int
-airborne:int
-visZones:list
-obstacle_distance:int
+
+s_courant:State
 
 def init():
     global maxX
@@ -96,7 +107,7 @@ def init():
     airborne=1
 
     global docked 
-    docked=0 
+    docked=0
 
     global crashed
     crashed=0
@@ -109,6 +120,95 @@ def init():
     battery=100
     visZones=[zoneOf(posX,posY)]
 
+    global s_courant
+    s_courant= State(posX,posY,battery,crashed,docked,airborne,visZones,obstacle_distance)
+
+def state_poss(s:State,bat_loss):
+    global baseX
+    global baseY
+    global Danger
+    poss=[]
+    if(s.posX+1<maxX):
+        posiX=s.posX+1
+        posiY=s.posY
+        if(posiX==baseX and posiY==baseY):
+            dock=1
+            air=0
+        else:
+            dock=0
+            air=1
+        if(s.crashed):
+            air=0
+        if((posiX,posiY) in Danger):
+            obs=0
+        else:
+            obs=2
+        if((posiX,posiY) not in s.visZones):
+            tab=s.visZones + [(posiX, posiY)]
+        else:
+            tab=s.visZones
+        poss.append(State(posiX,posiY,s.battery-bat_loss,s.crashed,dock,air,tab,obs))
+    if(s_courant.posX-1>=0):
+        posiX=s.posX-1
+        posiY=s.posY
+        if(posiX==baseX and posiY==baseY):
+            dock=1
+            air=0
+        else:
+            dock=0
+            air=1
+        if(s.crashed):
+            air=0
+        if((posiX,posiY) in Danger):
+            obs=0
+        else:
+            obs=2
+        if((posiX,posiY) not in s.visZones):
+            tab=s.visZones + [(posiX, posiY)]
+        else:
+            tab=s.visZones
+        poss.append(State(posiX,posiY,s.battery-bat_loss,s.crashed,dock,air,tab,obs))
+    if(s_courant.posY+1<maxY):
+        posiX=s.posX
+        posiY=s.posY+1
+        if(posiX==baseX and posiY==baseY):
+            dock=1
+            air=0
+        else:
+            dock=0
+            air=1
+        if(s.crashed):
+            air=0
+        if((posiX,posiY) in Danger):
+            obs=0
+        else:
+            obs=2
+        if((posiX,posiY) not in s.visZones):
+            tab=s.visZones + [(posiX, posiY)]
+        else:
+            tab=s.visZones
+        poss.append(State(posiX,posiY,s.battery-bat_loss,s.crashed,dock,air,tab,obs))
+    if(s_courant.posY-1>=0):
+        posiX=s.posX
+        posiY=s.posY-1
+        if(posiX==baseX and posiY==baseY):
+            dock=1
+            air=0
+        else:
+            dock=0
+            air=1
+        if(s.crashed):
+            air=0
+        if((posiX,posiY) in Danger):
+            obs=0
+        else:
+            obs=2
+        if((posiX,posiY) not in s.visZones):
+            tab=s.visZones + [(posiX, posiY)]
+        else:
+            tab=s.visZones
+        poss.append(State(posiX,posiY,s.battery-bat_loss,s.crashed,dock,air,tab,obs))
+    return poss
 
 def  zoneOf(x:int,y:int):
     global maxX
@@ -309,6 +409,8 @@ def return_home() :
         else :
             obstacle_distance = 2
 
+    return (posX, posY)
+
 def charge_step() :
     global crashed
     global airborne
@@ -464,7 +566,8 @@ deja_visite = []
 deja_visite.append(s0)
 
 for s in a_explorer :
-
+    s.remplir_transitions()
+    explore(s, a_explorer, -1, -1)
     deja_visite.append(s)
       
 
