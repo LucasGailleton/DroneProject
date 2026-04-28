@@ -1,5 +1,5 @@
 import random as r
-
+import re
 
 class State:
     def __init__(self,posX:int,posY:int,battery:int,crashed:int,docked:int,airborne:int,visZones:list,obstacle_distance:int):
@@ -18,6 +18,17 @@ class State:
         self.visZones = visZones    # Zones déjà visitées
         self.obstacle_distance = obstacle_distance
         self.tOut:list
+    
+    # AJOUT : Permet de faire "if niu in state_possible"
+    def __eq__(self, other):
+        if not isinstance(other, State):
+            return False
+        return (self.posX, self.posY, self.battery, self.crashed, 
+                self.docked, self.airborne, self.visZones, 
+                self.obstacle_distance) == \
+               (other.posX, other.posY, other.battery, other.crashed, 
+                other.docked, other.airborne, other.visZones, 
+                other.obstacle_distance)
 
 class Transition:
     def __init__(self, src: State, dest: State, action: str,p:float):
@@ -338,103 +349,86 @@ def takeoff_cmd() :
              obstacle_distance = 2
 
 def return_home() :
-    global crashed
-    global airborne
-    global docked
-    global battery
+    global s_courant
     global Danger
-    global posX
-    global posY
     global baseX
     global baseY
-    global obstacle_distance
-    global visZones
 
-    if(crashed == 0 and airborne == 1 and docked == 0 and battery > 0) :
-        if(posX < baseX) :
-            nextX = posX + 1
 
-        elif(posX > baseX) :
-            nextX = posX - 1
+    if(s_courant.crashed == 0 and s_courant.airborne == 1 and s_courant.docked == 0 and s_courant.battery > 0) :
+        if(s_courant.posX < baseX) :
+            nextX = s_courant.posX + 1
 
-        else :
-            nextX = posX
-
-        if(posY < baseY) :
-            nextY = posY + 1
-
-        elif(posY > baseY) :
-            nextY = posY - 1
+        elif(s_courant.posX > baseX) :
+            nextX = s_courant.posX - 1
 
         else :
-            nextY = posY
+            nextX = s_courant.posX
 
-        posX = nextX
-        posY = nextY
-        battery = battery - 1
-        visZones.append(zoneOf(nextX, nextY))
+        if(s_courant.posY < baseY) :
+            nextY = s_courant.posY + 1
+
+        elif(s_courant.posY > baseY) :
+            nextY = s_courant.posY - 1
+
+        else :
+            nextY = s_courant.posY
+
+        s_courant.posX = nextX
+        s_courant.posY = nextY
+        s_courant.battery = s_courant.battery - 1
+        s_courant.visZones.append(zoneOf(nextX, nextY))
 
         if((nextX, nextY) in Danger):
-           obstacle_distance = 0
+           s_courant.obstacle_distance = 0
         else :
-            obstacle_distance = 2
+            s_courant.obstacle_distance = 2
 
 def charge_step() :
-    global crashed
-    global airborne
-    global docked
-    global battery
-    global Danger
-    global posX
-    global posY
-    global obstacle_distance
+    global s_courant
 
-    if(crashed == 0 and docked == 1) :
-        battery = battery + 5 if battery <= 95 else 100
+    if(s_courant.crashed == 0 and s_courant.docked == 1) :
+        s_courant.battery = s_courant.battery + 5 if s_courant.battery <= 95 else 100
 
 
 def emergency_stop() :
-    global crashed
-    global airborne
-    global docked
-    global obstacle_distance
+    global s_courant
 
-    crashed = 1
-    airborne = 0
-    docked = 0
-    obstacle_distance = 0
+    s_courant.crashed = 1
+    s_courant.airborne = 0
+    s_courant.docked = 0
+    s_courant.obstacle_distance = 0
 
 
-def auto(fich) :
-    f=open(fich,'r')
+def auto(valeurs) :
     #init
     global maxX
-    maxX= f.readline()[9]
+    maxX= valeurs[0]
 
     global maxY
-    maxY= f.readline()[9]
+    maxY= valeurs[1]
 
     print(maxX)
     global baseX 
-    baseX= f.readline()[11]
+    baseX= valeurs[2]
 
     if(baseX<0 or baseX>maxX):
         print("initialisation incorrecte\n")
         return
 
     global baseY
-    baseY= f.readline()[11]
+    baseY= valeurs[3]
 
     if(baseY<0 or baseY>maxY):
         print("initialisation incorrecte\n")
         return
 
-    posX= f.readline()[12]
+    posX= valeurs[4]
     if(posX<0 or posX>maxX):
         print("initialisation incorrecte\n")
         return
 
-    posY= f.readline()[12]
+    posY= valeurs[5]
     if(posY<0 or posY>maxY):
         print("initialisation incorrecte\n")
         return
@@ -447,33 +441,90 @@ def auto(fich) :
     visZones=[zoneOf(posX,posY)]
     global s_courant
     s_courant= State(posX,posY,battery,crashed,docked,airborne,visZones,obstacle_distance)
+    act=6
     #parcours
-    while():
+    while(act<len(valeurs)):
         if(not(crashed==0 and airborne==1 and docked==0 and battery>0)):
+            print("Crash.")
             return Exception
-        possible=mov_poss(posX,posY)
-        choix=f.readline()[0]
-        
-        if(choix<0 or choix>len(possible)-1):
-            print(possible)
-            print("mouvement impossible\n")
 
-        posX=possible[choix][0]
-        posY=possible[choix][1]
-        battery-=1
-        if(zoneOf(posX,posY) not in visZones):
-            visZones.append(zoneOf(posX,posY))
-        if((posX,posY) in Danger):
-            obstacle_distance=0
-            emergency_stop()
+
+        action=valeurs[act]
+        act+=1
+        match action:
+            case 1:
+                movestep_auto(valeurs[act],valeurs[act+1])
+                act+=2
+            case 2:
+                avoid_maneuver_auto(valeurs[act],valeurs[act+1])
+                act+=2
+            case 3:
+                return_home()
+            case 4:
+                charge_step()
+            case 5:
+                emergency_stop()
+            case 6:
+                takeoff_cmd()
+        afficher()
+
+def avoid_maneuver_auto(a,b):
+    global s_courant
+    if(not(s_courant.crashed==0 and s_courant.airborne==1 and s_courant.docked==0 and s_courant.battery>1)):
+        return Exception
+    state_possible:list
+    state_possible=state_avoid(s_courant)
+    posiX=a
+    posiY=b
+    if((posiX<0 or posiX>maxX or (posiX!=s_courant.posX and posiX!=s_courant.posX+1 and posiX!=s_courant.posX-1)) or (posiY<0 or posiY>maxY or (posiY!=s_courant.posY and posiY!=s_courant.posY+1 and posiY!=s_courant.posY-1))):
+        print("action impossible movestep_auto")
+    else:
+        if(posiX==baseX and posiY==baseY):
+            dock=1
+            air=0
         else:
-            obstacle_distance=2
-        if((posX,posY)==(baseX,baseY)):
-            docked=1
-            airborne=0
+            dock=0
+            air=1
+        if(s_courant.crashed):
+            air=0
+        if((posiX,posiY) in Danger):
+            obs=0
+        else:
+            obs=2
+        if((posiX,posiY) not in s_courant.visZones):
+            tab=s_courant.visZones + [(posiX, posiY)]
+        else:
+            tab=s_courant.visZones
+        niu=State(posiX,posiY,s_courant.battery-2,s_courant.crashed,dock,air,tab,obs)
+        s_courant=niu
 
-
-
+def movestep_auto(a,b):
+    global s_courant
+    if(not(s_courant.crashed==0 and s_courant.airborne==1 and s_courant.docked==0 and s_courant.battery>1)):
+        return Exception
+    posiX=a
+    posiY=b
+    if((posiX<0 or posiX>maxX or (posiX!=s_courant.posX and posiX!=s_courant.posX+1 and posiX!=s_courant.posX-1)) or (posiY<0 or posiY>maxY or (posiY!=s_courant.posY and posiY!=s_courant.posY+1 and posiY!=s_courant.posY-1))):
+        print("action impossible movestep_auto")
+    else:
+        if(posiX==baseX and posiY==baseY):
+            dock=1
+            air=0
+        else:
+            dock=0
+            air=1
+        if(s_courant.crashed):
+            air=0
+        if((posiX,posiY) in Danger):
+            obs=0
+        else:
+            obs=2
+        if((posiX,posiY) not in s_courant.visZones):
+            tab=s_courant.visZones + [(posiX, posiY)]
+        else:
+            tab=s_courant.visZones
+        niu=State(posiX,posiY,s_courant.battery-1,s_courant.crashed,dock,air,tab,obs)
+        s_courant=niu
 
 def mess(step,avoid):
     i=1
@@ -512,17 +563,18 @@ if(mode==1):
                 takeoff_cmd()
         afficher()
 elif(mode==2):
-    fichier=input("nom du fichier commande:")
-    #auto(fichier)
-    f=open(fichier,'r')
-    print(f.readline()[0])
+    fichier=input("Nom du fichier commande : ")
 
-    #Pour la lecture
-    contenu = f.read()
-    # \d+ cherche toutes les suites de chiffres dans le texte
-    valeurs = [int(n) for n in re.findall(r'\d+', contenu)]
-
-
+    try:
+        with open(fichier, 'r') as f:
+            # On lit tout le contenu d'un coup pour ne rien rater
+            contenu = f.read()
+            
+            # \d+ cherche toutes les suites de chiffres dans le texte
+            valeurs = [int(n) for n in re.findall(r'\d+', contenu)]
+    except FileNotFoundError:
+        print("Erreur : Le fichier est introuvable.")
+    auto(valeurs)
 
 
 """Transition{
