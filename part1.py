@@ -24,7 +24,7 @@ class State:
     
     def remplir_transition(self) :
         if (self.crashed == 0 and self.airborne == 0 and self.docked == 0 and self.battery > 0) :
-            etat_suiv = State(posX, posY, battery, crashed, docked, 1, visZones, obstacle_distance)
+            etat_suiv = State(self.posX, self.posY, self.battery, self.crashed, self.docked, 1, self.visZones, self.obstacle_distance)
             self.transi.append(Transition(self, etat_suiv, "takeoff_cmd"))
 
         if (self.crashed == 0 and self.airborne == 1 and self.docked == 0 and self.battery > 0) :
@@ -53,6 +53,16 @@ class State:
 
         etat_suiv = State(self.posX, self.posY, self.battery, 1, 0, 0, self.visZones, 0)
         self.transi.append(Transition(self, etat_suiv, "emergency_stop"))
+
+    def eq(self, other):
+        if not isinstance(other, State):
+            return False
+
+        return (self.posX == other.posX) and (self.posY == other.posY) and (self.battery == other.battery) and (self.crashed == other.crashed) and (self.docked == other.docked) and (self.airborne == other.airborne) and (tuple(self.visZones) == tuple(other.visZones)) and (self.obstacle_distance == other.obstacle_distance)
+
+    def __hash__(self):
+        return hash((self.posX, self.posY, self.battery, self.crashed, self.docked, self.airborne, tuple(self.visZones), self.obstacle_distance))
+
 
 class Transition:
     def __init__(self, src: State, dest: State, label: str):
@@ -554,11 +564,11 @@ def explorer_etats() :
 #init()
 #danger()
 #afficher()
-init()
+"""init()
 danger()
 afficher()
-states : list[State]
-s0 = State(maxX, maxY, baseX, baseY, posX, posY, battery, crashed, docked, airborne, visZones, obstacle_distance)
+states : list
+s0 = State(posX, posY, battery, crashed, docked, airborne, visZones, obstacle_distance)
 explore(s0, states, -1, -1)
 
 a_explorer = states
@@ -568,7 +578,7 @@ deja_visite.append(s0)
 for s in a_explorer :
     s.remplir_transitions()
     explore(s, a_explorer, -1, -1)
-    deja_visite.append(s)
+    deja_visite.append(s)"""
       
 
 
