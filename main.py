@@ -191,32 +191,32 @@ class Transition:
 
 def init():
 
-    maxX= int(input("rentrer la taille max x :"))
+    maxX= int(input("rentrer la taille max x de la grille:"))
 
 
-    maxY= int(input("rentrer la taille max y :"))
+    maxY= int(input("rentrer la taille max y de la grille:"))
 
   
-    baseX= int(input("rentrer x de la base :"))
+    baseX= int(input("rentrer la coordonnée x de la base :"))
 
     while(baseX<0 or baseX>maxX):
-        baseX= int(input("rentrer x de la base :"))
+        baseX= int(input("rentrer la coordonnée x de la base :"))
 
 
-    baseY= int(input("rentrer y de la base :"))
+    baseY= int(input("rentrer la coordonnée y de la base :"))
 
     while(baseY<0 or baseY>maxY):
-        baseY= int(input("rentrer y de la base :"))
+        baseY= int(input("rentrer la coordonnée y de la base :"))
 
     
-    posX= int(input("rentrer x du drone :"))
+    posX= int(input("rentrer la coordonnée x du drone :"))
     while(posX<0 or posX>maxX):
-        posX= int(input("rentrer x du drone :"))
+        posX= int(input("rentrer la coordonnée x du drone :"))
 
     
-    posY= int(input("rentrer y du drone :"))
+    posY= int(input("rentrer la coordonnée y du drone :"))
     while(posY<0 or posY>maxY):
-        posY= int(input("rentrer y du drone :"))
+        posY= int(input("rentrer la coordonnée y du drone :"))
 
     
     airborne=0
@@ -291,7 +291,7 @@ def movestep(MaxX,MaxY,baseX,baseY,Danger,s_courant):
         choix=int(input("choisissez l'action à effectuer en tapant son indice\n"))
         while(choix<0 or choix>len(state_possible)-1):
             print("[")
-            for i in state_possible:
+            for i in range(0,len(state_possible),1):
                 print("("+state_possible[i].posX+","+state_possible[i].posY+")"+",")
             print("]")
             choix=int(input("choisissez l'action à effectuer en tapant son indice\n"))
@@ -377,7 +377,7 @@ def avoid_maneuver(MaxX,MaxY,baseX,baseY,Danger,s_courant):
         choix=int(input("choisissez l'action à effectuer en tapant son indice\n"))
         while(choix<0 or choix>len(state_possible)-1):
             print("[")
-            for i in state_possible:
+            for i in range(0,len(state_possible),1):
                 print("("+state_possible[i].posX+","+state_possible[i].posY+")"+",")
             print("]")
             choix=int(input("choisissez l'action à effectuer en tapant son indice\n"))
@@ -650,11 +650,14 @@ elif(mode==2):
 elif(mode==3):
     grid_maxX,grid_maxY,base_X,base_Y,s0=init()
     liste_danger = danger(grid_maxX, grid_maxY, base_X, base_Y)
+    maxD= int(input("rentrer le maxdepth :"))
 
+
+    maxB= int(input("rentrer le maxbreadth :"))
 
     etats_visites = set()
 
     print("Lancement de l'exploration...")
-    explore(s0, etats_visites, maxDepth=10000, maxBreadth=20, maxX=grid_maxX, maxY=grid_maxY, baseX=base_X, baseY=base_Y, Danger=liste_danger)
+    explore(s0, etats_visites, maxDepth=maxD, maxBreadth=maxB, maxX=grid_maxX, maxY=grid_maxY, baseX=base_X, baseY=base_Y, Danger=liste_danger)
     
     print(f"Exploration terminée ! L'algorithme a découvert {len(etats_visites)} états uniques.")
