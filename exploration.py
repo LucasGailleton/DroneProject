@@ -198,7 +198,6 @@ def zoneOf(x : int, y : int, maxX : int, maxY : int):
         return 4
 
 
-
 def explore(s : State, S : set, maxDepth : int, maxBreadth: int, maxX, maxY, baseX, baseY, Danger):
 
     if s in S:
