@@ -306,3 +306,43 @@ while(True) :
 
 
 
+    #init
+
+    maxX= valeurs[0]
+
+
+    maxY= valeurs[1]
+
+    print(maxX)
+
+    baseX= valeurs[2]
+
+    if(baseX<0 or baseX>maxX):
+        print("initialisation incorrecte\n")
+        return
+
+
+    baseY= valeurs[3]
+
+    if(baseY<0 or baseY>maxY):
+        print("initialisation incorrecte\n")
+        return
+
+    posX= valeurs[4]
+    if(posX<0 or posX>maxX):
+        print("initialisation incorrecte\n")
+        return
+
+    posY= valeurs[5]
+    if(posY<0 or posY>maxY):
+        print("initialisation incorrecte\n")
+        return
+
+    airborne=1
+    docked=0 
+    crashed=0
+    obstacle_distance = 2
+    battery=100
+    visZones=[zoneOf(posX,posY,maxX,maxY)]
+
+    s_courant= State(posX,posY,battery,crashed,docked,airborne,visZones,obstacle_distance)

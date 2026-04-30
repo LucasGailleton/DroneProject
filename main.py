@@ -497,48 +497,8 @@ def emergency_stop(s_courant) :
     return s_courant
 
 
-def auto(maxX,maxY,baseX,baseY,Danger,valeurs) :
-    #init
-
-    maxX= valeurs[0]
-
-
-    maxY= valeurs[1]
-
-    print(maxX)
-
-    baseX= valeurs[2]
-
-    if(baseX<0 or baseX>maxX):
-        print("initialisation incorrecte\n")
-        return
-
-
-    baseY= valeurs[3]
-
-    if(baseY<0 or baseY>maxY):
-        print("initialisation incorrecte\n")
-        return
-
-    posX= valeurs[4]
-    if(posX<0 or posX>maxX):
-        print("initialisation incorrecte\n")
-        return
-
-    posY= valeurs[5]
-    if(posY<0 or posY>maxY):
-        print("initialisation incorrecte\n")
-        return
-
-    airborne=1
-    docked=0 
-    crashed=0
-    obstacle_distance = 2
-    battery=100
-    visZones=[zoneOf(posX,posY,maxX,maxY)]
-
-    s_courant= State(posX,posY,battery,crashed,docked,airborne,visZones,obstacle_distance)
-    act=6
+def auto(maxX,maxY,baseX,baseY,Danger,s_courant,valeurs) :
+    act=0
     #parcours
     while(s_courant.crashed==0 and act<len(valeurs)):
         action=valeurs[act]
@@ -551,48 +511,46 @@ def auto(maxX,maxY,baseX,baseY,Danger,valeurs) :
                 s_courant=avoid_maneuver_auto(maxX,maxY,baseX,baseY,valeurs[act],valeurs[act+1],Danger,s_courant)
                 act+=2
             case 3:
-                s_courant=return_home()
+                s_courant=return_home(maxX,maxY,baseX,baseY,Danger,s_courant)
             case 4:
-                s_courant=charge_step()
+                s_courant=charge_step(s_courant)
             case 5:
-                s_courant=emergency_stop()
+                s_courant=emergency_stop(s_courant)
             case 6:
-                s_courant=takeoff_cmd()
+                s_courant=takeoff_cmd(Danger,s_courant)
             case 7:
-                s_courant=dock_cmd()
+                s_courant=dock_cmd(baseX,baseY,s_courant)
             case 8:
                 s_courant=undock_cmd(s_courant)
-        afficher()
+        if(s_courant==1):
+            return 1        
+        afficher(maxX,maxY,baseX,baseY,Danger,s_courant)
 
 def avoid_maneuver_auto(maxX,maxY,baseX,baseY,a,b,Danger,s_courant):
     if(s_courant.crashed==0 and s_courant.airborne==1 and s_courant.docked==0 and s_courant.battery>1):
         state_possible:list
-        state_possible=state_avoid(s_courant)
+        state_possible=state_avoid(maxX,maxY,baseX,baseY,Danger,s_courant)
         posiX=a
         posiY=b
         if((posiX<0 or posiX>maxX or (posiX!=s_courant.posX and posiX!=s_courant.posX+1 and posiX!=s_courant.posX-1)) or (posiY<0 or posiY>maxY or (posiY!=s_courant.posY and posiY!=s_courant.posY+1 and posiY!=s_courant.posY-1))):
-            print("action impossible movestep_auto")
+            print("action impossible mauvaise coordonnées")
         else:
-            if(posiX==baseX and posiY==baseY):
-                dock=1
-                air=0
-            else:
-                dock=0
-                air=1
+            air=s_courant.airborne
             if(s_courant.crashed):
                 air=0
             if((posiX,posiY) in Danger):
                 obs=0
             else:
                 obs=2
-            if((posiX,posiY) not in s_courant.visZones):
-                tab=s_courant.visZones + [(posiX, posiY)]
+            if(zoneOf(posiX,posiY,maxX,maxY) not in s_courant.visZones):
+                tab=s_courant.visZones | frozenset([zoneOf(posiX, posiY,maxX,maxY)])
             else:
                 tab=s_courant.visZones
-            niu=State(posiX,posiY,s_courant.battery-2,s_courant.crashed,dock,air,tab,obs)
+            niu=State(posiX,posiY,s_courant.battery-2,s_courant.crashed,s_courant.docked,air,tab,obs)
             s_courant=niu
     else:
         print("Action Impossible")
+        return 1
     return s_courant
 
 def movestep_auto(maxX,maxY,baseX,baseY,a,b,Danger,s_courant):
@@ -602,23 +560,18 @@ def movestep_auto(maxX,maxY,baseX,baseY,a,b,Danger,s_courant):
         if((posiX<0 or posiX>maxX or (posiX!=s_courant.posX and posiX!=s_courant.posX+1 and posiX!=s_courant.posX-1)) or (posiY<0 or posiY>maxY or (posiY!=s_courant.posY and posiY!=s_courant.posY+1 and posiY!=s_courant.posY-1))):
             print("action impossible movestep_auto")
         else:
-            if(posiX==baseX and posiY==baseY):
-                dock=1
-                air=0
-            else:
-                dock=0
-                air=1
+            air=s_courant.airborne
             if(s_courant.crashed):
                 air=0
             if((posiX,posiY) in Danger):
                 obs=0
             else:
                 obs=2
-            if((posiX,posiY) not in s_courant.visZones):
-                tab=s_courant.visZones + [(posiX, posiY)]
+            if(zoneOf(posiX,posiY,maxX,maxY) not in s_courant.visZones):
+                tab=s_courant.visZones | frozenset([zoneOf(posiX, posiY,maxX,maxY)])
             else:
                 tab=s_courant.visZones
-            niu=State(posiX,posiY,s_courant.battery-1,s_courant.crashed,dock,air,tab,obs)
+            niu=State(posiX,posiY,s_courant.battery-1,s_courant.crashed,s_courant.docked,air,tab,obs)
             s_courant=niu
     else:
         print("Action Impossible")
@@ -639,12 +592,13 @@ def undock_cmd(s_courant):
 
     else:
         print("Action Impossible")
+        return 1
     return s_courant
 
-#main
-#init()
-#danger()
-#afficher()
+########################################################################################
+#-----------------------------------------MAIN-----------------------------------------#
+########################################################################################
+
 mode=int(input("(1):manuel (2):auto (3):exhaustif"))
 while(mode!=1 and mode!=2 and mode!=3):
     mode=int(input("(1):manuel (2):auto (3):exhaustif"))
@@ -653,10 +607,9 @@ if(mode==1):
     Danger=danger(maxX,maxY,baseX,baseY)
     afficher(maxX,maxY,baseX,baseY,Danger,s_courant)
     while(not s_courant.crashed):
-        #message=mess()
-        choix=int(input("(1):Movstep (2):AvoidManeuveur (3):ReturnHome (4):Charge_Step (5):Emergency_Stop (6):Takeoff_cmd (7):dock_cmd (8):undock_cmd\n"))
-        while(choix!=1 and choix!=2 and choix!=3 and choix!=4 and choix!=5 and choix!=6 and choix!=7 and choix!=8):
-            choix=int(input("(1):movstep (2):avoidmaneuveur (3):returnhome (4):charge_step (5):emergency_stop (6):takeoff_cmd (7):dock_cmd (8):undock_cmd\n"))
+        choix=int(input("(1):Movstep (2):AvoidManeuveur (3):ReturnHome (4):Charge_Step (5):Emergency_Stop (6):Takeoff_cmd (7):dock_cmd (8):undock_cmd (9)quitter\n"))
+        while(choix!=1 and choix!=2 and choix!=3 and choix!=4 and choix!=5 and choix!=6 and choix!=7 and choix!=8 and choix!=9):
+            choix=int(input("(1):movstep (2):avoidmaneuveur (3):returnhome (4):charge_step (5):emergency_stop (6):takeoff_cmd (7):dock_cmd (8):undock_cmd (9)quitter\n"))
         match choix:
             case 1:
                 s_courant=movestep(maxX,maxY,baseX,baseY,Danger,s_courant)
@@ -674,29 +627,30 @@ if(mode==1):
                 s_courant=dock_cmd(baseX,baseY,s_courant)
             case 8:
                 s_courant=undock_cmd(s_courant)
+            case 9:
+                break
         afficher(maxX,maxY,baseX,baseY,Danger,s_courant)
 elif(mode==2):
-    fichier=input("Nom du fichier commande : ")
-
-    try:
-        with open(fichier, 'r') as f:
-            # On lit tout le contenu d'un coup pour ne rien rater
-            contenu = f.read()
-            
-            # \d+ cherche toutes les suites de chiffres dans le texte
-            valeurs = [int(n) for n in re.findall(r'\d+', contenu)]
-    except FileNotFoundError:
-        print("Erreur : Le fichier est introuvable.")
-    auto(valeurs)
+    maxX,maxY,baseX,baseY,s_courant=init()
+    Danger=danger(maxX,maxY,baseX,baseY)
+    while(True):
+        fichier=input("Nom du fichier commande (x pour quitter): ")
+        if(fichier=="x"):
+            break
+        try:
+            with open(fichier, 'r') as f:
+                # On lit tout le contenu d'un coup pour ne rien rater
+                contenu = f.read()
+                
+                # \d+ cherche toutes les suites de chiffres dans le texte
+                valeurs = [int(n) for n in re.findall(r'\d+', contenu)]
+        except FileNotFoundError:
+            print("Erreur : Le fichier est introuvable.")
+        auto(maxX,maxY,baseX,baseY,Danger,s_courant,valeurs)
 elif(mode==3):
-    grid_maxX = 5
-    grid_maxY = 5
-    base_X = 0
-    base_Y = 0
+    grid_maxX,grid_maxY,base_X,base_Y,s0=init()
     liste_danger = danger(grid_maxX, grid_maxY, base_X, base_Y)
 
-    zone_base = zoneOf(base_X, base_Y, grid_maxX, grid_maxY)
-    s0 = State(base_X, base_Y, 100, 0, 0, 0, [zone_base], 2)
 
     etats_visites = set()
 
