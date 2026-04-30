@@ -1,4 +1,6 @@
 import random as r
+import sys
+sys.setrecursionlimit(5000)
 
 class State:
     def __init__(self, posX : int, posY : int, battery : int, crashed : int, docked : int, airborne : int, visZones : list, obstacle_distance : int):
@@ -242,8 +244,8 @@ def danger(maxX : int, maxY : int, baseX : int, baseY : int) :
 
 if __name__ == "__main__":
 
-    grid_maxX = 5
-    grid_maxY = 5
+    grid_maxX = 6
+    grid_maxY = 6
     base_X = 0
     base_Y = 0
     liste_danger = danger(grid_maxX, grid_maxY, base_X, base_Y)
@@ -254,6 +256,6 @@ if __name__ == "__main__":
     etats_visites = set()
 
     print("Lancement de l'exploration...")
-    explore(s0, etats_visites, maxDepth=10, maxBreadth=-1, maxX=grid_maxX, maxY=grid_maxY, baseX=base_X, baseY=base_Y, Danger=liste_danger)
+    explore(s0, etats_visites, maxDepth=10000, maxBreadth=20, maxX=grid_maxX, maxY=grid_maxY, baseX=base_X, baseY=base_Y, Danger=liste_danger)
     
-    print(f"Exploration terminée ! L'algorithme a découvert {len(etats_visites)} états uniques.")
+    print(f"Exploration terminée ! L'algorithme a découvert {len(etats_visites)} états.")
