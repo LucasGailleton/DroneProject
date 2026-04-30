@@ -2,6 +2,7 @@ import random as r
 import sys
 sys.setrecursionlimit(5000)
 
+
 class State:
     def __init__(self, posX : int, posY : int, battery : int, crashed : int, docked : int, airborne : int, visZones : list, obstacle_distance : int):
 

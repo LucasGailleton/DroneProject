@@ -51,7 +51,6 @@ L'interface affiche la grille après chaque action.
 Lorsque l'éxecution des commandes du fichier est terminée (ou en cas d'erreur dûe à une action impossible), on vous demandera à nouveau un fichier de commandes(afin de pouvoir tester d'autre séquence de commande sur le même environnement),taper "x" pour mettre fin au programme.
 
 
-
 #### Mode 3 : Exhaustif
 D'abord vous devez faire la configuration initiale.
 Ensuite, il faut entrer les maxdepth et maxbreadth qui servent à limiter l'exploration afin de ne pas faire tourner le programme à l'infini. Par exemple maxdepth = 10 000 et maxbreadth = 20. Cependant, le nombre d'états est limité : par exemple, si l'on prend les valeurs de maxdepth et maxbreadth précédente, une grille de 6x6 et des coordonées pour la base et le drone de (0, 0), peu importe le taux de cases danger, on aura toujours 37 028 états car avec un maxdepth aussi grand l'algorithme va renvoyer tous les états possibles, peu importe si ce sont des cases danger ou non.
