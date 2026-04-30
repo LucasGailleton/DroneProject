@@ -6,11 +6,11 @@ sys.setrecursionlimit(5000)
 class State:
     def __init__(self,posX:int,posY:int,battery:int,crashed:int,docked:int,airborne:int,visZones:list,obstacle_distance:int):
         
-        # Position de la base et du drone
+        # Position du drone
         self.posX = posX
         self.posY = posY
         
-        # États du drone (Booléens ou Int)
+        # États du drone 
         self.battery = battery
         self.crashed = crashed
         self.docked = docked
@@ -374,13 +374,13 @@ def avoid_maneuver(MaxX,MaxY,baseX,baseY,Danger,s_courant):
         for i in range(0,len(state_possible),1):
             print(f"({state_possible[i].posX}, {state_possible[i].posY}),", end="")
         print("]")
-        choix=int(input("choisissez l'action à effectuer en tapant son indice\n"))
+        choix=int(input("choisissez l'action à effectuer en tapant son indice(0,1,2,...)\n"))
         while(choix<0 or choix>len(state_possible)-1):
             print("[",end="")
             for i in range(0,len(state_possible),1):
                 print(f"({state_possible[i].posX}, {state_possible[i].posY}),", end="")
             print("]")
-            choix=int(input("choisissez l'action à effectuer en tapant son indice\n"))
+            choix=int(input("choisissez l'action à effectuer en tapant son indice(0,1,2,...)\n"))
         s_courant=state_possible[choix]
     else:
         print("Action Impossible")
@@ -521,7 +521,7 @@ def auto(maxX,maxY,baseX,baseY,Danger,s_courant,valeurs) :
             case 7:
                 s_courant=dock_cmd(baseX,baseY,s_courant)
             case 8:
-                s_courant=undock_cmd(s_courant)
+                s_courant=undock_cmd(maxX,maxY,s_courant)
         if(s_courant==1):
             return 1        
         afficher(maxX,maxY,baseX,baseY,Danger,s_courant)
@@ -585,10 +585,12 @@ def dock_cmd(baseX,baseY,s_courant):
         print("Action Impossible")
     return s_courant
 
-def undock_cmd(s_courant):
+def undock_cmd(maxX,maxY,s_courant):
     if(s_courant.battery>0 and s_courant.crashed==0 and s_courant.docked==1):
         s_courant.docked=0
         s_courant.airborne=1
+        if(zoneOf(s_courant.posX,s_courant.posY,maxX,maxY) not in s_courant.visZones):
+            s_courant.visZones=s_courant.visZones | frozenset([zoneOf(s_courant.posX,s_courant.posY,maxX,maxY)])
 
     else:
         print("Action Impossible")
@@ -626,7 +628,7 @@ if(mode==1):
             case 7:
                 s_courant=dock_cmd(baseX,baseY,s_courant)
             case 8:
-                s_courant=undock_cmd(s_courant)
+                s_courant=undock_cmd(maxX,maxY,s_courant)
             case 9:
                 break
         afficher(maxX,maxY,baseX,baseY,Danger,s_courant)
