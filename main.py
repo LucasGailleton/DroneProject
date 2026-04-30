@@ -290,9 +290,9 @@ def movestep(MaxX,MaxY,baseX,baseY,Danger,s_courant):
         print("]")
         choix=int(input("choisissez l'action à effectuer en tapant son indice\n"))
         while(choix<0 or choix>len(state_possible)-1):
-            print("[")
+            print("[",end="")
             for i in range(0,len(state_possible),1):
-                print("("+state_possible[i].posX+","+state_possible[i].posY+")"+",")
+                print(f"({state_possible[i].posX}, {state_possible[i].posY}),", end="")
             print("]")
             choix=int(input("choisissez l'action à effectuer en tapant son indice\n"))
         s_courant=state_possible[choix]
@@ -376,9 +376,9 @@ def avoid_maneuver(MaxX,MaxY,baseX,baseY,Danger,s_courant):
         print("]")
         choix=int(input("choisissez l'action à effectuer en tapant son indice\n"))
         while(choix<0 or choix>len(state_possible)-1):
-            print("[")
+            print("[",end="")
             for i in range(0,len(state_possible),1):
-                print("("+state_possible[i].posX+","+state_possible[i].posY+")"+",")
+                print(f"({state_possible[i].posX}, {state_possible[i].posY}),", end="")
             print("]")
             choix=int(input("choisissez l'action à effectuer en tapant son indice\n"))
         s_courant=state_possible[choix]
@@ -607,9 +607,9 @@ if(mode==1):
     Danger=danger(maxX,maxY,baseX,baseY)
     afficher(maxX,maxY,baseX,baseY,Danger,s_courant)
     while(not s_courant.crashed):
-        choix=int(input("(1):Movstep (2):AvoidManeuveur (3):ReturnHome (4):Charge_Step (5):Emergency_Stop (6):Takeoff_cmd (7):dock_cmd (8):undock_cmd (9)quitter\n"))
+        choix=int(input("(1):Movstep (2):AvoidManeuveur (3):ReturnHome (4):Charge_Step (5):Emergency_Stop (6):Takeoff_cmd (7):dock_cmd (8):undock_cmd (9):quitter\n"))
         while(choix!=1 and choix!=2 and choix!=3 and choix!=4 and choix!=5 and choix!=6 and choix!=7 and choix!=8 and choix!=9):
-            choix=int(input("(1):movstep (2):avoidmaneuveur (3):returnhome (4):charge_step (5):emergency_stop (6):takeoff_cmd (7):dock_cmd (8):undock_cmd (9)quitter\n"))
+            choix=int(input("(1):movstep (2):avoidmaneuveur (3):returnhome (4):charge_step (5):emergency_stop (6):takeoff_cmd (7):dock_cmd (8):undock_cmd (9):quitter\n"))
         match choix:
             case 1:
                 s_courant=movestep(maxX,maxY,baseX,baseY,Danger,s_courant)
